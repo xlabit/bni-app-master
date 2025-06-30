@@ -6,18 +6,75 @@ import { Plus, Edit, Trash2, Eye, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
+import { ChapterForm } from '@/components/admin/ChapterForm';
+import { useToast } from '@/hooks/use-toast';
 import { mockChapters } from '@/data/mockData';
+import { Chapter } from '@/types';
 
 const Chapters = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [chapters, setChapters] = useState(mockChapters);
+  const [selectedChapter, setSelectedChapter] = useState<Chapter | undefined>();
+  const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const { toast } = useToast();
 
   const filteredChapters = chapters.filter(chapter =>
     chapter.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleCreate = () => {
+    setSelectedChapter(undefined);
+    setFormMode('create');
+    setIsFormOpen(true);
+  };
+
+  const handleEdit = (chapter: Chapter) => {
+    setSelectedChapter(chapter);
+    setFormMode('edit');
+    setIsFormOpen(true);
+  };
+
+  const handleView = (chapter: Chapter) => {
+    setSelectedChapter(chapter);
+    setFormMode('view');
+    setIsFormOpen(true);
+  };
+
   const handleDelete = (id: string) => {
-    setChapters(chapters.filter(chapter => chapter.id !== id));
+    if (window.confirm('Are you sure you want to delete this chapter? This action cannot be undone.')) {
+      setChapters(chapters.filter(chapter => chapter.id !== id));
+      toast({
+        title: "Chapter deleted",
+        description: "The chapter has been successfully deleted.",
+      });
+    }
+  };
+
+  const handleFormSubmit = (data: Omit<Chapter, 'id' | 'createdAt' | 'memberCount'>) => {
+    if (formMode === 'create') {
+      const newChapter: Chapter = {
+        ...data,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        memberCount: 0
+      };
+      setChapters([...chapters, newChapter]);
+      toast({
+        title: "Chapter created",
+        description: "New chapter has been successfully created.",
+      });
+    } else if (formMode === 'edit' && selectedChapter) {
+      setChapters(chapters.map(chapter =>
+        chapter.id === selectedChapter.id
+          ? { ...chapter, ...data }
+          : chapter
+      ));
+      toast({
+        title: "Chapter updated",
+        description: "Chapter has been successfully updated.",
+      });
+    }
   };
 
   const toggleStatus = (id: string) => {
@@ -26,6 +83,12 @@ const Chapters = () => {
         ? { ...chapter, status: chapter.status === 'active' ? 'inactive' : 'active' }
         : chapter
     ));
+    const chapter = chapters.find(c => c.id === id);
+    const newStatus = chapter?.status === 'active' ? 'inactive' : 'active';
+    toast({
+      title: "Status updated",
+      description: `Chapter status changed to ${newStatus}.`,
+    });
   };
 
   return (
@@ -45,7 +108,7 @@ const Chapters = () => {
               />
             </div>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleCreate}>
             <Plus className="w-4 h-4" />
             Add Chapter
           </Button>
@@ -64,45 +127,53 @@ const Chapters = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredChapters.map((chapter) => (
-                <TableRow key={chapter.id}>
-                  <TableCell className="font-medium">{chapter.name}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold text-primary">{chapter.memberCount}</span>
-                      <span className="text-sm text-gray-500">members</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={chapter.status === 'active' ? 'default' : 'secondary'}
-                      className="cursor-pointer"
-                      onClick={() => toggleStatus(chapter.id)}
-                    >
-                      {chapter.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{new Date(chapter.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => handleDelete(chapter.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+              {filteredChapters.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    {searchTerm ? 'No chapters found matching your search.' : 'No chapters available.'}
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredChapters.map((chapter) => (
+                  <TableRow key={chapter.id}>
+                    <TableCell className="font-medium">{chapter.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl font-bold text-primary">{chapter.memberCount}</span>
+                        <span className="text-sm text-gray-500">members</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={chapter.status === 'active' ? 'default' : 'secondary'}
+                        className="cursor-pointer"
+                        onClick={() => toggleStatus(chapter.id)}
+                      >
+                        {chapter.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{new Date(chapter.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => handleView(chapter)}>
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(chapter)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => handleDelete(chapter.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
@@ -115,6 +186,15 @@ const Chapters = () => {
             <Button variant="outline" size="sm" disabled>Next</Button>
           </div>
         </div>
+
+        {/* Chapter Form Modal */}
+        <ChapterForm
+          isOpen={isFormOpen}
+          onClose={() => setIsFormOpen(false)}
+          onSubmit={handleFormSubmit}
+          chapter={selectedChapter}
+          mode={formMode}
+        />
       </div>
     </DashboardLayout>
   );
