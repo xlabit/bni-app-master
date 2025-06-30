@@ -1,58 +1,119 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/admin/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Plus, Edit, Trash2, Eye, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import { mockChapters } from '@/data/mockData';
 
 const Chapters = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [chapters, setChapters] = useState(mockChapters);
+
+  const filteredChapters = chapters.filter(chapter =>
+    chapter.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleDelete = (id: string) => {
+    setChapters(chapters.filter(chapter => chapter.id !== id));
+  };
+
+  const toggleStatus = (id: string) => {
+    setChapters(chapters.map(chapter =>
+      chapter.id === id
+        ? { ...chapter, status: chapter.status === 'active' ? 'inactive' : 'active' }
+        : chapter
+    ));
+  };
+
   return (
     <DashboardLayout title="Chapters Management">
       <div className="space-y-6">
         {/* Header Actions */}
-        <div className="flex justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">All Chapters</h2>
+        <div className="flex flex-col sm:flex-row gap-4 justify-between">
+          <div className="flex flex-1 gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="Search chapters..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
           <Button className="gap-2">
             <Plus className="w-4 h-4" />
             Add Chapter
           </Button>
         </div>
 
-        {/* Chapters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockChapters.map((chapter) => (
-            <Card key={chapter.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-xl">{chapter.name}</CardTitle>
-                  <Badge variant={chapter.status === 'active' ? 'default' : 'secondary'}>
-                    {chapter.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Members:</span>
-                  <span className="font-semibold text-lg">{chapter.memberCount}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Created:</span>
-                  <span>{new Date(chapter.createdAt).toLocaleDateString()}</span>
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1 gap-2">
-                    <Edit className="w-4 h-4" />
-                    Edit
-                  </Button>
-                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Chapters Table */}
+        <div className="bg-white rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Chapter Name</TableHead>
+                <TableHead>Members</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredChapters.map((chapter) => (
+                <TableRow key={chapter.id}>
+                  <TableCell className="font-medium">{chapter.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold text-primary">{chapter.memberCount}</span>
+                      <span className="text-sm text-gray-500">members</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={chapter.status === 'active' ? 'default' : 'secondary'}
+                      className="cursor-pointer"
+                      onClick={() => toggleStatus(chapter.id)}
+                    >
+                      {chapter.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{new Date(chapter.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => handleDelete(chapter.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Pagination Info */}
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <span>Showing {filteredChapters.length} of {chapters.length} chapters</span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" disabled>Previous</Button>
+            <Button variant="outline" size="sm" disabled>Next</Button>
+          </div>
         </div>
       </div>
     </DashboardLayout>
