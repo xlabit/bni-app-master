@@ -7,6 +7,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { Login } from "@/pages/admin/Login";
 import Dashboard from "@/pages/admin/Dashboard";
+import Members from "@/pages/admin/Members";
+import Chapters from "@/pages/admin/Chapters";
+import Deals from "@/pages/admin/Deals";
+import Forms from "@/pages/admin/Forms";
+import Reports from "@/pages/admin/Reports";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +29,31 @@ const AppRoutes = () => {
       <Route path="/admin" element={
         <ProtectedRoute>
           <Dashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/members" element={
+        <ProtectedRoute>
+          <Members />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/chapters" element={
+        <ProtectedRoute>
+          <Chapters />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/deals" element={
+        <ProtectedRoute>
+          <Deals />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/forms" element={
+        <ProtectedRoute>
+          <Forms />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/reports" element={
+        <ProtectedRoute>
+          <Reports />
         </ProtectedRoute>
       } />
       <Route path="/" element={<Navigate to="/admin" replace />} />
