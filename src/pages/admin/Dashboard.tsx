@@ -3,71 +3,92 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DashboardLayout } from '@/components/admin/DashboardLayout';
 import { Users, Building2, Tag, TrendingUp, Calendar, AlertTriangle } from 'lucide-react';
-import { mockStats, mockDeals, mockMembers } from '@/data/mockData';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useDashboardCharts } from '@/hooks/useDashboardCharts';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Dashboard = () => {
-  const stats = [
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { data: chartsData, isLoading: chartsLoading } = useDashboardCharts();
+
+  if (statsLoading || chartsLoading) {
+    return (
+      <DashboardLayout title="Dashboard">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-64 w-full" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-64 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const statsCards = [
     {
       title: 'Total Members',
-      value: mockStats.totalMembers,
-      change: '+12%',
+      value: stats?.totalMembers || 0,
+      change: stats?.activeMembers ? `${Math.round((stats.activeMembers / stats.totalMembers) * 100)}% active` : '0% active',
       changeType: 'positive' as const,
       icon: Users,
       color: 'bg-blue-500'
     },
     {
       title: 'Active Deals',
-      value: mockStats.activeDeals,
-      change: '+5%',
-      changeType: 'positive' as const,
+      value: stats?.activeDeals || 0,
+      change: stats?.expiringDeals ? `${stats.expiringDeals} expiring soon` : '0 expiring soon',
+      changeType: stats?.expiringDeals ? 'negative' as const : 'neutral' as const,
       icon: Tag,
       color: 'bg-green-500'
     },
     {
       title: 'Active Chapters',
-      value: mockStats.activeChapters,
-      change: '0%',
+      value: stats?.activeChapters || 0,
+      change: stats?.totalChapters ? `${stats.totalChapters} total` : '0 total',
       changeType: 'neutral' as const,
       icon: Building2,
       color: 'bg-purple-500'
     },
     {
       title: 'Expiring Soon',
-      value: mockStats.expiringDeals,
-      change: '+2',
+      value: stats?.expiringDeals || 0,
+      change: 'Next 30 days',
       changeType: 'negative' as const,
       icon: AlertTriangle,
       color: 'bg-red-500'
     }
   ];
 
-  const categoryData = [
-    { name: 'Business Services', value: 15, color: '#8884d8' },
-    { name: 'Legal Services', value: 8, color: '#82ca9d' },
-    { name: 'Food & Catering', value: 6, color: '#ffc658' },
-    { name: 'Technology', value: 9, color: '#ff7300' },
-    { name: 'Other', value: 10, color: '#0088fe' }
-  ];
-
-  const monthlyData = [
-    { month: 'Jan', members: 120, deals: 25 },
-    { month: 'Feb', members: 125, deals: 28 },
-    { month: 'Mar', members: 130, deals: 32 },
-    { month: 'Apr', members: 135, deals: 35 },
-    { month: 'May', members: 140, deals: 40 },
-    { month: 'Jun', members: 143, deals: 38 }
-  ];
-
-  const recentMembers = mockMembers.slice(0, 5);
-  const recentDeals = mockDeals.slice(0, 3);
-
   return (
     <DashboardLayout title="Dashboard">
       <div className="space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
+          {statsCards.map((stat, index) => (
             <Card key={index}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -79,7 +100,7 @@ const Dashboard = () => {
                       stat.changeType === 'negative' ? 'text-red-600' : 'text-gray-600'
                     }`}>
                       <TrendingUp className="w-3 h-3 mr-1" />
-                      {stat.change} from last month
+                      {stat.change}
                     </p>
                   </div>
                   <div className={`${stat.color} p-3 rounded-lg`}>
@@ -101,7 +122,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={monthlyData}>
+                <LineChart data={chartsData?.monthlyTrends || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
@@ -123,7 +144,7 @@ const Dashboard = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={categoryData}
+                    data={chartsData?.categoryData || []}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -132,7 +153,7 @@ const Dashboard = () => {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {categoryData.map((entry, index) => (
+                    {(chartsData?.categoryData || []).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -142,6 +163,26 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Chapter Members Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Members by Chapter</CardTitle>
+            <CardDescription>Total and active members across chapters</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartsData?.chapterMemberData || []}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="members" fill="#8884d8" name="Total Members" />
+                <Bar dataKey="active" fill="#82ca9d" name="Active Members" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
         {/* Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -153,7 +194,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentMembers.map((member) => (
+                {(chartsData?.recentMembers || []).map((member) => (
                   <div key={member.id} className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                       <span className="text-sm font-medium">{member.name.charAt(0)}</span>
@@ -188,7 +229,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentDeals.map((deal) => (
+                {(chartsData?.recentDeals || []).map((deal) => (
                   <div key={deal.id} className="border-l-4 border-primary pl-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
