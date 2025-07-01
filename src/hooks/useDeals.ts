@@ -31,6 +31,8 @@ export const useDeals = () => {
         } : undefined,
         category: deal.category,
         status: deal.status as 'active' | 'inactive',
+        logoImageUrl: deal.logo_image_url || undefined,
+        bannerImageUrl: deal.banner_image_url || undefined,
         createdAt: deal.created_at
       })) as Deal[];
     }
@@ -58,7 +60,9 @@ export const useCreateDeal = () => {
           special_discount_type: data.specialRoleDiscount?.discountType || null,
           special_discount_value: data.specialRoleDiscount?.discountValue || null,
           category: data.category,
-          status: data.status
+          status: data.status,
+          logo_image_url: data.logoImageUrl || null,
+          banner_image_url: data.bannerImageUrl || null
         })
         .select()
         .single();
@@ -93,7 +97,9 @@ export const useUpdateDeal = () => {
           special_discount_type: data.specialRoleDiscount?.discountType || null,
           special_discount_value: data.specialRoleDiscount?.discountValue || null,
           category: data.category,
-          status: data.status
+          status: data.status,
+          logo_image_url: data.logoImageUrl || null,
+          banner_image_url: data.bannerImageUrl || null
         })
         .eq('id', id)
         .select()

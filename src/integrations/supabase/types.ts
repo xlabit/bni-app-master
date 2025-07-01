@@ -38,6 +38,7 @@ export type Database = {
       }
       deals: {
         Row: {
+          banner_image_url: string | null
           category: string
           created_at: string
           deal_name: string
@@ -45,6 +46,7 @@ export type Database = {
           discount_value: number
           end_date: string
           id: string
+          logo_image_url: string | null
           long_description: string
           member_id: string | null
           member_name: string
@@ -59,6 +61,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          banner_image_url?: string | null
           category: string
           created_at?: string
           deal_name: string
@@ -66,6 +69,7 @@ export type Database = {
           discount_value: number
           end_date: string
           id?: string
+          logo_image_url?: string | null
           long_description: string
           member_id?: string | null
           member_name: string
@@ -80,6 +84,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          banner_image_url?: string | null
           category?: string
           created_at?: string
           deal_name?: string
@@ -87,6 +92,7 @@ export type Database = {
           discount_value?: number
           end_date?: string
           id?: string
+          logo_image_url?: string | null
           long_description?: string
           member_id?: string | null
           member_name?: string

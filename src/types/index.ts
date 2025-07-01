@@ -45,6 +45,8 @@ export interface Deal {
   };
   category: string;
   status: 'active' | 'inactive';
+  logoImageUrl?: string;
+  bannerImageUrl?: string;
   createdAt: string;
 }
 

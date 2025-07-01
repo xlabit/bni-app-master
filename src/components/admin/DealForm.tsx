@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { ImageUpload } from './ImageUpload';
 import { Deal } from '@/types';
 
 interface DealFormProps {
@@ -36,7 +37,9 @@ export const DealForm: React.FC<DealFormProps> = ({
       discountType: deal?.discountType || 'percentage' as 'flat' | 'percentage',
       discountValue: deal?.discountValue || 0,
       category: deal?.category || '',
-      status: deal?.status || 'active' as 'active' | 'inactive'
+      status: deal?.status || 'active' as 'active' | 'inactive',
+      logoImageUrl: deal?.logoImageUrl || '',
+      bannerImageUrl: deal?.bannerImageUrl || ''
     }
   });
 
@@ -71,7 +74,7 @@ export const DealForm: React.FC<DealFormProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {mode === 'create' && 'Add New Deal'}
@@ -79,7 +82,7 @@ export const DealForm: React.FC<DealFormProps> = ({
             {mode === 'view' && 'Deal Details'}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="dealName">Deal Name</Label>
@@ -219,6 +222,28 @@ export const DealForm: React.FC<DealFormProps> = ({
                 disabled={mode === 'view'}
               />
               {errors.discountValue && <p className="text-sm text-red-600">{errors.discountValue.message}</p>}
+            </div>
+          </div>
+
+          {/* Image Upload Section */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium mb-4">Deal Images</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ImageUpload
+                label="Logo/Small Image"
+                value={watch('logoImageUrl')}
+                onChange={(url) => setValue('logoImageUrl', url || '')}
+                disabled={mode === 'view'}
+                placeholder="Upload logo or small image for mobile app"
+              />
+              
+              <ImageUpload
+                label="Banner Image"
+                value={watch('bannerImageUrl')}
+                onChange={(url) => setValue('bannerImageUrl', url || '')}
+                disabled={mode === 'view'}
+                placeholder="Upload banner image for mobile app"
+              />
             </div>
           </div>
 
