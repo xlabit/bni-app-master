@@ -8,16 +8,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { ChapterForm } from '@/components/admin/ChapterForm';
 import { useToast } from '@/hooks/use-toast';
-import { mockChapters } from '@/data/mockData';
 import { Chapter } from '@/types';
+import { useChapters, useCreateChapter, useUpdateChapter, useDeleteChapter } from '@/hooks/useChapters';
 
 const Chapters = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [chapters, setChapters] = useState(mockChapters);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | undefined>();
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
+
+  const { data: chapters = [], isLoading, error } = useChapters();
+  const createChapterMutation = useCreateChapter();
+  const updateChapterMutation = useUpdateChapter();
+  const deleteChapterMutation = useDeleteChapter();
 
   const filteredChapters = chapters.filter(chapter =>
     chapter.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -41,55 +45,83 @@ const Chapters = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this chapter? This action cannot be undone.')) {
-      setChapters(chapters.filter(chapter => chapter.id !== id));
+      try {
+        await deleteChapterMutation.mutateAsync(id);
+        toast({
+          title: "Chapter deleted",
+          description: "The chapter has been successfully deleted.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete chapter. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleFormSubmit = async (data: Omit<Chapter, 'id' | 'createdAt' | 'memberCount'>) => {
+    try {
+      if (formMode === 'create') {
+        await createChapterMutation.mutateAsync(data);
+        toast({
+          title: "Chapter created",
+          description: "New chapter has been successfully created.",
+        });
+      } else if (formMode === 'edit' && selectedChapter) {
+        await updateChapterMutation.mutateAsync({ id: selectedChapter.id, ...data });
+        toast({
+          title: "Chapter updated",
+          description: "Chapter has been successfully updated.",
+        });
+      }
+      setIsFormOpen(false);
+    } catch (error) {
       toast({
-        title: "Chapter deleted",
-        description: "The chapter has been successfully deleted.",
+        title: "Error",
+        description: `Failed to ${formMode} chapter. Please try again.`,
+        variant: "destructive",
       });
     }
   };
 
-  const handleFormSubmit = (data: Omit<Chapter, 'id' | 'createdAt' | 'memberCount'>) => {
-    if (formMode === 'create') {
-      const newChapter: Chapter = {
-        ...data,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        memberCount: 0
-      };
-      setChapters([...chapters, newChapter]);
-      toast({
-        title: "Chapter created",
-        description: "New chapter has been successfully created.",
-      });
-    } else if (formMode === 'edit' && selectedChapter) {
-      setChapters(chapters.map(chapter =>
-        chapter.id === selectedChapter.id
-          ? { ...chapter, ...data }
-          : chapter
-      ));
-      toast({
-        title: "Chapter updated",
-        description: "Chapter has been successfully updated.",
-      });
-    }
-  };
-
-  const toggleStatus = (id: string) => {
-    setChapters(chapters.map(chapter =>
-      chapter.id === id
-        ? { ...chapter, status: chapter.status === 'active' ? 'inactive' : 'active' }
-        : chapter
-    ));
+  const toggleStatus = async (id: string) => {
     const chapter = chapters.find(c => c.id === id);
-    const newStatus = chapter?.status === 'active' ? 'inactive' : 'active';
-    toast({
-      title: "Status updated",
-      description: `Chapter status changed to ${newStatus}.`,
-    });
+    if (!chapter) return;
+    
+    try {
+      await updateChapterMutation.mutateAsync({
+        id,
+        status: chapter.status === 'active' ? 'inactive' : 'active'
+      });
+      toast({
+        title: "Status updated",
+        description: `Chapter status changed to ${chapter.status === 'active' ? 'inactive' : 'active'}.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update chapter status. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (error) {
+    return (
+      <DashboardLayout title="Chapters Management">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-red-600">Error loading chapters</h3>
+            <p className="text-gray-600">Please try refreshing the page.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout title="Chapters Management">
@@ -127,7 +159,13 @@ const Chapters = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredChapters.length === 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    Loading chapters...
+                  </TableCell>
+                </TableRow>
+              ) : filteredChapters.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                     {searchTerm ? 'No chapters found matching your search.' : 'No chapters available.'}

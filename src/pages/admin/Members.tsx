@@ -8,16 +8,20 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MemberForm } from '@/components/admin/MemberForm';
 import { useToast } from '@/hooks/use-toast';
-import { mockMembers } from '@/data/mockData';
 import { Member } from '@/types';
+import { useMembers, useCreateMember, useUpdateMember, useDeleteMember } from '@/hooks/useMembers';
 
 const Members = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [members, setMembers] = useState(mockMembers);
   const [selectedMember, setSelectedMember] = useState<Member | undefined>();
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
+
+  const { data: members = [], isLoading, error } = useMembers();
+  const createMemberMutation = useCreateMember();
+  const updateMemberMutation = useUpdateMember();
+  const deleteMemberMutation = useDeleteMember();
 
   const filteredMembers = members.filter(member =>
     member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,53 +48,69 @@ const Members = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
-      setMembers(members.filter(member => member.id !== id));
+      try {
+        await deleteMemberMutation.mutateAsync(id);
+        toast({
+          title: "Member deleted",
+          description: "The member has been successfully deleted.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete member. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleFormSubmit = async (data: Omit<Member, 'id' | 'joinDate'>) => {
+    try {
+      if (formMode === 'create') {
+        await createMemberMutation.mutateAsync(data);
+        toast({
+          title: "Member created",
+          description: "New member has been successfully created.",
+        });
+      } else if (formMode === 'edit' && selectedMember) {
+        await updateMemberMutation.mutateAsync({ id: selectedMember.id, ...data });
+        toast({
+          title: "Member updated",
+          description: "Member has been successfully updated.",
+        });
+      }
+      setIsFormOpen(false);
+    } catch (error) {
       toast({
-        title: "Member deleted",
-        description: "The member has been successfully deleted.",
+        title: "Error",
+        description: `Failed to ${formMode} member. Please try again.`,
+        variant: "destructive",
       });
     }
   };
 
-  const handleFormSubmit = (data: Omit<Member, 'id' | 'joinDate'>) => {
-    if (formMode === 'create') {
-      const newMember: Member = {
-        ...data,
-        id: Date.now().toString(),
-        joinDate: new Date().toISOString()
-      };
-      setMembers([...members, newMember]);
-      toast({
-        title: "Member created",
-        description: "New member has been successfully created.",
-      });
-    } else if (formMode === 'edit' && selectedMember) {
-      setMembers(members.map(member =>
-        member.id === selectedMember.id
-          ? { ...member, ...data }
-          : member
-      ));
-      toast({
-        title: "Member updated",
-        description: "Member has been successfully updated.",
-      });
-    }
-  };
-
-  const toggleStatus = (id: string) => {
-    setMembers(members.map(member =>
-      member.id === id
-        ? { ...member, status: member.status === 'active' ? 'inactive' : 'active' }
-        : member
-    ));
+  const toggleStatus = async (id: string) => {
     const member = members.find(m => m.id === id);
-    const newStatus = member?.status === 'active' ? 'inactive' : 'active';
-    toast({
-      title: "Status updated",
-      description: `Member status changed to ${newStatus}.`,
-    });
+    if (!member) return;
+    
+    try {
+      await updateMemberMutation.mutateAsync({
+        id,
+        status: member.status === 'active' ? 'inactive' : 'active'
+      });
+      toast({
+        title: "Status updated",
+        description: `Member status changed to ${member.status === 'active' ? 'inactive' : 'active'}.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update member status. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const isExpiringSoon = (endDate: string) => {
@@ -106,6 +126,19 @@ const Members = () => {
     const expiry = new Date(endDate);
     return expiry < today;
   };
+
+  if (error) {
+    return (
+      <DashboardLayout title="Members Management">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-red-600">Error loading members</h3>
+            <p className="text-gray-600">Please try refreshing the page.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout title="Members Management">
@@ -149,7 +182,13 @@ const Members = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredMembers.length === 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                    Loading members...
+                  </TableCell>
+                </TableRow>
+              ) : filteredMembers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                     {searchTerm ? 'No members found matching your search.' : 'No members available.'}

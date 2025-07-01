@@ -8,16 +8,20 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DealForm } from '@/components/admin/DealForm';
 import { useToast } from '@/hooks/use-toast';
-import { mockDeals } from '@/data/mockData';
 import { Deal } from '@/types';
+import { useDeals, useCreateDeal, useUpdateDeal, useDeleteDeal } from '@/hooks/useDeals';
 
 const Deals = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [deals, setDeals] = useState(mockDeals);
   const [selectedDeal, setSelectedDeal] = useState<Deal | undefined>();
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
+
+  const { data: deals = [], isLoading, error } = useDeals();
+  const createDealMutation = useCreateDeal();
+  const updateDealMutation = useUpdateDeal();
+  const deleteDealMutation = useDeleteDeal();
 
   const filteredDeals = deals.filter(deal =>
     deal.dealName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -44,53 +48,69 @@ const Deals = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this deal? This action cannot be undone.')) {
-      setDeals(deals.filter(deal => deal.id !== id));
+      try {
+        await deleteDealMutation.mutateAsync(id);
+        toast({
+          title: "Deal deleted",
+          description: "The deal has been successfully deleted.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete deal. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleFormSubmit = async (data: Omit<Deal, 'id' | 'createdAt'>) => {
+    try {
+      if (formMode === 'create') {
+        await createDealMutation.mutateAsync(data);
+        toast({
+          title: "Deal created",
+          description: "New deal has been successfully created.",
+        });
+      } else if (formMode === 'edit' && selectedDeal) {
+        await updateDealMutation.mutateAsync({ id: selectedDeal.id, ...data });
+        toast({
+          title: "Deal updated",
+          description: "Deal has been successfully updated.",
+        });
+      }
+      setIsFormOpen(false);
+    } catch (error) {
       toast({
-        title: "Deal deleted",
-        description: "The deal has been successfully deleted.",
+        title: "Error",
+        description: `Failed to ${formMode} deal. Please try again.`,
+        variant: "destructive",
       });
     }
   };
 
-  const handleFormSubmit = (data: Omit<Deal, 'id' | 'createdAt'>) => {
-    if (formMode === 'create') {
-      const newDeal: Deal = {
-        ...data,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString()
-      };
-      setDeals([...deals, newDeal]);
-      toast({
-        title: "Deal created",
-        description: "New deal has been successfully created.",
-      });
-    } else if (formMode === 'edit' && selectedDeal) {
-      setDeals(deals.map(deal =>
-        deal.id === selectedDeal.id
-          ? { ...deal, ...data }
-          : deal
-      ));
-      toast({
-        title: "Deal updated",
-        description: "Deal has been successfully updated.",
-      });
-    }
-  };
-
-  const toggleStatus = (id: string) => {
-    setDeals(deals.map(deal =>
-      deal.id === id
-        ? { ...deal, status: deal.status === 'active' ? 'inactive' : 'active' }
-        : deal
-    ));
+  const toggleStatus = async (id: string) => {
     const deal = deals.find(d => d.id === id);
-    const newStatus = deal?.status === 'active' ? 'inactive' : 'active';
-    toast({
-      title: "Status updated",
-      description: `Deal status changed to ${newStatus}.`,
-    });
+    if (!deal) return;
+    
+    try {
+      await updateDealMutation.mutateAsync({
+        id,
+        status: deal.status === 'active' ? 'inactive' : 'active'
+      });
+      toast({
+        title: "Status updated",
+        description: `Deal status changed to ${deal.status === 'active' ? 'inactive' : 'active'}.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update deal status. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const isExpiringSoon = (endDate: string) => {
@@ -106,6 +126,19 @@ const Deals = () => {
     const expiry = new Date(endDate);
     return expiry < today;
   };
+
+  if (error) {
+    return (
+      <DashboardLayout title="Deals Management">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-red-600">Error loading deals</h3>
+            <p className="text-gray-600">Please try refreshing the page.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout title="Deals Management">
@@ -148,7 +181,13 @@ const Deals = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDeals.length === 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                    Loading deals...
+                  </TableCell>
+                </TableRow>
+              ) : filteredDeals.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     {searchTerm ? 'No deals found matching your search.' : 'No deals available.'}

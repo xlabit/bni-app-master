@@ -9,7 +9,199 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      chapters: {
+        Row: {
+          created_at: string
+          id: string
+          member_count: number
+          name: string
+          status: Database["public"]["Enums"]["status_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_count?: number
+          name: string
+          status?: Database["public"]["Enums"]["status_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_count?: number
+          name?: string
+          status?: Database["public"]["Enums"]["status_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      deals: {
+        Row: {
+          category: string
+          created_at: string
+          deal_name: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          end_date: string
+          id: string
+          long_description: string
+          member_id: string | null
+          member_name: string
+          short_description: string
+          special_discount_type:
+            | Database["public"]["Enums"]["discount_type"]
+            | null
+          special_discount_value: number | null
+          special_role_discount: boolean | null
+          start_date: string
+          status: Database["public"]["Enums"]["status_type"]
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          deal_name: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          end_date: string
+          id?: string
+          long_description: string
+          member_id?: string | null
+          member_name: string
+          short_description: string
+          special_discount_type?:
+            | Database["public"]["Enums"]["discount_type"]
+            | null
+          special_discount_value?: number | null
+          special_role_discount?: boolean | null
+          start_date: string
+          status?: Database["public"]["Enums"]["status_type"]
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          deal_name?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          end_date?: string
+          id?: string
+          long_description?: string
+          member_id?: string | null
+          member_name?: string
+          short_description?: string
+          special_discount_type?:
+            | Database["public"]["Enums"]["discount_type"]
+            | null
+          special_discount_value?: number | null
+          special_role_discount?: boolean | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["status_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forms: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          public_url: string | null
+          status: Database["public"]["Enums"]["status_type"]
+          submissions: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          public_url?: string | null
+          status?: Database["public"]["Enums"]["status_type"]
+          submissions?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          public_url?: string | null
+          status?: Database["public"]["Enums"]["status_type"]
+          submissions?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          business_name: string
+          chapter_id: string | null
+          chapter_name: string
+          created_at: string
+          email: string
+          id: string
+          join_date: string
+          member_role: Database["public"]["Enums"]["member_role"]
+          membership_end_date: string
+          name: string
+          phone: string
+          profile_image: string | null
+          status: Database["public"]["Enums"]["status_type"]
+          updated_at: string
+        }
+        Insert: {
+          business_name: string
+          chapter_id?: string | null
+          chapter_name: string
+          created_at?: string
+          email: string
+          id?: string
+          join_date?: string
+          member_role?: Database["public"]["Enums"]["member_role"]
+          membership_end_date: string
+          name: string
+          phone: string
+          profile_image?: string | null
+          status?: Database["public"]["Enums"]["status_type"]
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string
+          chapter_id?: string | null
+          chapter_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          join_date?: string
+          member_role?: Database["public"]["Enums"]["member_role"]
+          membership_end_date?: string
+          name?: string
+          phone?: string
+          profile_image?: string | null
+          status?: Database["public"]["Enums"]["status_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +210,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      discount_type: "flat" | "percentage"
+      member_role: "regular" | "leadership" | "ro" | "green" | "gold"
+      status_type: "active" | "inactive"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +327,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      discount_type: ["flat", "percentage"],
+      member_role: ["regular", "leadership", "ro", "green", "gold"],
+      status_type: ["active", "inactive"],
+    },
   },
 } as const
