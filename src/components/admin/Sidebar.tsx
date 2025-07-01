@@ -94,12 +94,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                 <span className="text-sm font-medium text-gray-700">
-                  {user?.name.charAt(0)}
+                  {user?.email?.charAt(0).toUpperCase() || 'A'}
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-500 capitalize">{user?.role.replace('_', ' ')}</p>
+                <p className="text-sm font-medium text-gray-900">{user?.email || 'Admin User'}</p>
+                <p className="text-xs text-gray-500">Admin</p>
               </div>
             </div>
             <Button
