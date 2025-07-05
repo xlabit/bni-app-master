@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Member } from '@/types';
+import { useChapters } from '@/hooks/useChapters';
 
 interface MemberFormProps {
   isOpen: boolean;
@@ -23,6 +25,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({
   member,
   mode
 }) => {
+  const { data: chapters = [] } = useChapters();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm({
     defaultValues: {
       name: member?.name || '',
@@ -47,6 +50,12 @@ export const MemberForm: React.FC<MemberFormProps> = ({
   }, [member, setValue, reset]);
 
   const handleFormSubmit = (data: any) => {
+    // Validate chapter selection
+    if (!data.chapterName) {
+      alert('Please select a chapter');
+      return;
+    }
+    
     onSubmit(data);
     reset();
     onClose();
@@ -129,12 +138,27 @@ export const MemberForm: React.FC<MemberFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="chapterName">Chapter</Label>
-              <Input
-                id="chapterName"
-                {...register('chapterName', { required: 'Chapter is required' })}
-                placeholder="Enter chapter name"
-                disabled={mode === 'view'}
-              />
+              {mode === 'view' ? (
+                <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm">
+                  {watch('chapterName')}
+                </div>
+              ) : (
+                <Select
+                  value={watch('chapterName')}
+                  onValueChange={(value) => setValue('chapterName', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a chapter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {chapters.map((chapter) => (
+                      <SelectItem key={chapter.id} value={chapter.name}>
+                        {chapter.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {errors.chapterName && <p className="text-sm text-red-600">{errors.chapterName.message}</p>}
             </div>
 

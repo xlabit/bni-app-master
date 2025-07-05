@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from './ImageUpload';
 import { Deal } from '@/types';
+import { useMembers } from '@/hooks/useMembers';
 
 interface DealFormProps {
   isOpen: boolean;
@@ -25,6 +27,9 @@ export const DealForm: React.FC<DealFormProps> = ({
   deal,
   mode
 }) => {
+  const [memberSearch, setMemberSearch] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { data: members = [] } = useMembers();
   const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm({
     defaultValues: {
       dealName: deal?.dealName || '',
@@ -55,7 +60,24 @@ export const DealForm: React.FC<DealFormProps> = ({
     }
   }, [deal, setValue, reset]);
 
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isDropdownOpen && !(event.target as Element).closest('.relative')) {
+        setIsDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
+
   const handleFormSubmit = (data: any) => {
+    // Validate member selection
+    if (!data.memberName || !data.memberId) {
+      alert('Please select a member from the dropdown');
+      return;
+    }
+    
     // Validate dates
     if (new Date(data.startDate) >= new Date(data.endDate)) {
       alert('End date must be after start date');
@@ -148,12 +170,58 @@ export const DealForm: React.FC<DealFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="memberName">Member Name</Label>
-              <Input
-                id="memberName"
-                {...register('memberName', { required: 'Member name is required' })}
-                placeholder="Enter member name"
-                disabled={mode === 'view'}
-              />
+              {mode === 'view' ? (
+                <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm">
+                  {watch('memberName')}
+                </div>
+              ) : (
+                <div className="relative">
+                  <Input
+                    value={memberSearch || watch('memberName')}
+                    onChange={(e) => {
+                      setMemberSearch(e.target.value);
+                      setIsDropdownOpen(true);
+                      if (!e.target.value) {
+                        setValue('memberName', '');
+                        setValue('memberId', '');
+                      }
+                    }}
+                    onFocus={() => setIsDropdownOpen(true)}
+                    placeholder="Type to search members..."
+                    className="w-full"
+                  />
+                  {isDropdownOpen && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                      {members
+                        .filter(member => 
+                          member.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+                          member.businessName.toLowerCase().includes(memberSearch.toLowerCase())
+                        )
+                        .map((member) => (
+                          <div
+                            key={member.id}
+                            className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => {
+                              setValue('memberName', member.name);
+                              setValue('memberId', member.id);
+                              setMemberSearch('');
+                              setIsDropdownOpen(false);
+                            }}
+                          >
+                            <div className="font-medium">{member.name}</div>
+                            <div className="text-sm text-gray-500">{member.businessName}</div>
+                          </div>
+                        ))}
+                      {members.filter(member => 
+                        member.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
+                        member.businessName.toLowerCase().includes(memberSearch.toLowerCase())
+                      ).length === 0 && (
+                        <div className="px-3 py-2 text-gray-500">No members found</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               {errors.memberName && <p className="text-sm text-red-600">{errors.memberName.message}</p>}
             </div>
 
@@ -161,11 +229,11 @@ export const DealForm: React.FC<DealFormProps> = ({
               <Label htmlFor="memberId">Member ID</Label>
               <Input
                 id="memberId"
-                {...register('memberId', { required: 'Member ID is required' })}
-                placeholder="Enter member ID"
-                disabled={mode === 'view'}
+                value={watch('memberId')}
+                placeholder="Auto-filled when member is selected"
+                disabled={true}
+                className="bg-muted"
               />
-              {errors.memberId && <p className="text-sm text-red-600">{errors.memberId.message}</p>}
             </div>
           </div>
 
