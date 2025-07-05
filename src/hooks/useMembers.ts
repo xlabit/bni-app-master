@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Member } from '@/types';
@@ -36,6 +35,8 @@ export const useCreateMember = () => {
   
   return useMutation({
     mutationFn: async (data: Omit<Member, 'id' | 'joinDate'>) => {
+      console.log('Creating member with data:', data);
+      
       const { data: member, error } = await supabase
         .from('members')
         .insert({
@@ -52,10 +53,16 @@ export const useCreateMember = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating member:', error);
+        throw error;
+      }
+      
+      console.log('Member created successfully:', member);
       return member;
     },
     onSuccess: () => {
+      console.log('Invalidating queries after member creation');
       queryClient.invalidateQueries({ queryKey: ['members'] });
       queryClient.invalidateQueries({ queryKey: ['chapters'] });
     }
@@ -67,6 +74,8 @@ export const useUpdateMember = () => {
   
   return useMutation({
     mutationFn: async ({ id, ...data }: { id: string } & Partial<Omit<Member, 'id' | 'joinDate'>>) => {
+      console.log('Updating member with id:', id, 'data:', data);
+      
       const { data: member, error } = await supabase
         .from('members')
         .update({
@@ -84,10 +93,16 @@ export const useUpdateMember = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating member:', error);
+        throw error;
+      }
+      
+      console.log('Member updated successfully:', member);
       return member;
     },
     onSuccess: () => {
+      console.log('Invalidating queries after member update');
       queryClient.invalidateQueries({ queryKey: ['members'] });
       queryClient.invalidateQueries({ queryKey: ['chapters'] });
     }

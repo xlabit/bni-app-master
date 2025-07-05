@@ -31,25 +31,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event, session);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
+    // Check for stored session first
+    const checkStoredSession = () => {
+      const storedSession = localStorage.getItem('mock-session');
+      if (storedSession) {
+        try {
+          const parsedSession = JSON.parse(storedSession);
+          // Check if session is still valid (not expired)
+          if (parsedSession.expires_at > Math.floor(Date.now() / 1000)) {
+            console.log('Restoring stored session:', parsedSession);
+            setUser(parsedSession.user);
+            setSession(parsedSession);
+            setIsLoading(false);
+            return true;
+          } else {
+            console.log('Stored session expired, removing');
+            localStorage.removeItem('mock-session');
+          }
+        } catch (error) {
+          console.error('Error parsing stored session:', error);
+          localStorage.removeItem('mock-session');
+        }
       }
-    );
+      return false;
+    };
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    // Try to restore stored session first
+    const hasStoredSession = checkStoredSession();
+    
+    if (!hasStoredSession) {
+      // Set up auth state listener for real Supabase auth
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          console.log('Auth state changed:', event, session);
+          setSession(session);
+          setUser(session?.user ?? null);
+          setIsLoading(false);
+        }
+      );
 
-    return () => subscription.unsubscribe();
+      // Check for existing Supabase session
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        console.log('Initial session check:', session);
+        if (!session) {
+          setSession(null);
+          setUser(null);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+        setIsLoading(false);
+      });
+
+      return () => subscription.unsubscribe();
+    }
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -97,6 +132,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Store in localStorage for persistence
       localStorage.setItem('mock-session', JSON.stringify(mockSession));
+      console.log('Storing session:', mockSession);
       
       setUser(mockUser);
       setSession(mockSession);
@@ -109,31 +145,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
+    console.log('Logging out');
     localStorage.removeItem('mock-session');
     setUser(null);
     setSession(null);
   };
-
-  // Check for stored session on mount
-  useEffect(() => {
-    const storedSession = localStorage.getItem('mock-session');
-    if (storedSession && !user) {
-      try {
-        const parsedSession = JSON.parse(storedSession);
-        // Check if session is still valid (not expired)
-        if (parsedSession.expires_at > Math.floor(Date.now() / 1000)) {
-          setUser(parsedSession.user);
-          setSession(parsedSession);
-        } else {
-          localStorage.removeItem('mock-session');
-        }
-      } catch (error) {
-        console.error('Error parsing stored session:', error);
-        localStorage.removeItem('mock-session');
-      }
-    }
-    setIsLoading(false);
-  }, []);
 
   return (
     <AuthContext.Provider value={{ user, session, login, logout, isLoading }}>

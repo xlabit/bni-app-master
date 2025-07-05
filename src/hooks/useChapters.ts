@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Chapter } from '@/types';
@@ -7,20 +6,38 @@ export const useChapters = () => {
   return useQuery({
     queryKey: ['chapters'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all chapters
+      const { data: chaptersData, error: chaptersError } = await supabase
         .from('chapters')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      
-      return data.map(chapter => ({
-        id: chapter.id,
-        name: chapter.name,
-        status: chapter.status as 'active' | 'inactive',
-        createdAt: chapter.created_at,
-        memberCount: chapter.member_count
-      })) as Chapter[];
+      if (chaptersError) throw chaptersError;
+
+      // Then get member counts for each chapter by chapter_name
+      const chaptersWithCounts = await Promise.all(
+        chaptersData.map(async (chapter) => {
+          const { count, error: countError } = await supabase
+            .from('members')
+            .select('*', { count: 'exact', head: true })
+            .eq('chapter_name', chapter.name)
+            .eq('status', 'active');
+          
+          if (countError) {
+            console.error('Error counting members for chapter:', chapter.name, countError);
+          }
+          
+          return {
+            id: chapter.id,
+            name: chapter.name,
+            status: chapter.status as 'active' | 'inactive',
+            createdAt: chapter.created_at,
+            memberCount: count || 0
+          };
+        })
+      );
+
+      return chaptersWithCounts as Chapter[];
     }
   });
 };
