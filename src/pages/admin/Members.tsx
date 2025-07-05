@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/admin/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Eye, FileSpreadsheet } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MemberForm } from '@/components/admin/MemberForm';
+import { MemberImport } from '@/components/admin/MemberImport';
 import { useToast } from '@/hooks/use-toast';
 import { Member } from '@/types';
 import { useMembers, useCreateMember, useUpdateMember, useDeleteMember } from '@/hooks/useMembers';
@@ -16,9 +16,10 @@ const Members = () => {
   const [selectedMember, setSelectedMember] = useState<Member | undefined>();
   const [formMode, setFormMode] = useState<'create' | 'edit' | 'view'>('create');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const { toast } = useToast();
 
-  const { data: members = [], isLoading, error } = useMembers();
+  const { data: members = [], isLoading, error, refetch } = useMembers();
   const createMemberMutation = useCreateMember();
   const updateMemberMutation = useUpdateMember();
   const deleteMemberMutation = useDeleteMember();
@@ -127,6 +128,11 @@ const Members = () => {
     return expiry < today;
   };
 
+  const handleImportComplete = () => {
+    refetch();
+    setIsImportOpen(false);
+  };
+
   if (error) {
     return (
       <DashboardLayout title="Members Management">
@@ -160,10 +166,20 @@ const Members = () => {
               <Filter className="w-4 h-4" />
             </Button>
           </div>
-          <Button className="gap-2" onClick={handleCreate}>
-            <Plus className="w-4 h-4" />
-            Add Member
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              className="gap-2" 
+              onClick={() => setIsImportOpen(true)}
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Import Members
+            </Button>
+            <Button className="gap-2" onClick={handleCreate}>
+              <Plus className="w-4 h-4" />
+              Add Member
+            </Button>
+          </div>
         </div>
 
         {/* Members Table */}
@@ -285,6 +301,13 @@ const Members = () => {
           onSubmit={handleFormSubmit}
           member={selectedMember}
           mode={formMode}
+        />
+
+        {/* Member Import Modal */}
+        <MemberImport
+          isOpen={isImportOpen}
+          onClose={() => setIsImportOpen(false)}
+          onImportComplete={handleImportComplete}
         />
       </div>
     </DashboardLayout>
