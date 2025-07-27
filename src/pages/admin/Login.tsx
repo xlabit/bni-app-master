@@ -31,7 +31,7 @@ export const Login = () => {
     } else {
       toast({
         title: "Login failed",
-        description: "Invalid email or password. Try admin@example.com / admin123",
+        description: "Invalid email or password. Please check your credentials and try again.",
         variant: "destructive",
       });
     }
@@ -90,11 +90,6 @@ export const Login = () => {
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
-            <p className="font-medium">Demo Credentials:</p>
-            <p>Email: admin@example.com</p>
-            <p>Password: admin123</p>
-          </div>
         </CardContent>
       </Card>
     </div>
