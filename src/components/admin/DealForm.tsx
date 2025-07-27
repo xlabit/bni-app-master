@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageUpload } from './ImageUpload';
+import { CategoryLookup } from './CategoryLookup';
 import { Deal } from '@/types';
 import { useMembers } from '@/hooks/useMembers';
 
@@ -122,21 +123,17 @@ export const DealForm: React.FC<DealFormProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <select
-                id="category"
-                {...register('category', { required: 'Category is required' })}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                disabled={mode === 'view'}
-              >
-                <option value="">Select category</option>
-                <option value="Restaurant">Restaurant</option>
-                <option value="Services">Services</option>
-                <option value="Retail">Retail</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="Education">Education</option>
-                <option value="Technology">Technology</option>
-                <option value="Other">Other</option>
-              </select>
+              {mode === 'view' ? (
+                <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm">
+                  {watch('category')}
+                </div>
+              ) : (
+                <CategoryLookup
+                  value={watch('category')}
+                  onChange={(categoryName) => setValue('category', categoryName)}
+                  error={errors.category?.message}
+                />
+              )}
               {errors.category && <p className="text-sm text-red-600">{errors.category.message}</p>}
             </div>
           </div>

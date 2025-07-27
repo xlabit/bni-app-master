@@ -9,6 +9,7 @@ import { Login } from "@/pages/admin/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import Members from "@/pages/admin/Members";
 import Chapters from "@/pages/admin/Chapters";
+import { Categories } from "@/pages/admin/Categories";
 import Deals from "@/pages/admin/Deals";
 import Forms from "@/pages/admin/Forms";
 import Reports from "@/pages/admin/Reports";

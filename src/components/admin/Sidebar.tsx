@@ -9,7 +9,8 @@ import {
   FileText, 
   BarChart3, 
   LogOut,
-  Menu
+  Menu,
+  Layers
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Members', href: '/admin/members', icon: Users },
   { name: 'Chapters', href: '/admin/chapters', icon: Building2 },
+  { name: 'Categories', href: '/admin/categories', icon: Layers },
   { name: 'Deals', href: '/admin/deals', icon: Tag },
   { name: 'Forms', href: '/admin/forms', icon: FileText },
   { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
