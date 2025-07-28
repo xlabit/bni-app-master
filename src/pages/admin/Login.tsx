@@ -13,27 +13,46 @@ export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const { login, signUp, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const success = await login(email, password);
-    
-    if (success) {
-      toast({
-        title: "Login successful",
-        description: "Welcome to the admin dashboard!",
-      });
-      navigate('/admin');
+    if (isSignUp) {
+      const { error } = await signUp(email, password, 'System Administrator');
+      
+      if (!error) {
+        toast({
+          title: "Account created successfully",
+          description: "Please check your email to confirm your account, or try logging in if email confirmation is disabled.",
+        });
+        setIsSignUp(false);
+      } else {
+        toast({
+          title: "Signup failed",
+          description: error.message || "Failed to create account. Please try again.",
+          variant: "destructive",
+        });
+      }
     } else {
-      toast({
-        title: "Login failed",
-        description: "Invalid email or password. Please check your credentials and try again.",
-        variant: "destructive",
-      });
+      const success = await login(email, password);
+      
+      if (success) {
+        toast({
+          title: "Login successful",
+          description: "Welcome to the admin dashboard!",
+        });
+        navigate('/admin');
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Invalid email or password. Please check your credentials and try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -48,7 +67,7 @@ export const Login = () => {
           </div>
           <CardTitle className="text-2xl font-bold">Admin Dashboard</CardTitle>
           <CardDescription>
-            Sign in to access the business network admin panel
+            {isSignUp ? 'Create admin account' : 'Sign in to access the business network admin panel'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -87,9 +106,18 @@ export const Login = () => {
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? (isSignUp ? 'Creating account...' : 'Signing in...') : (isSignUp ? 'Create Account' : 'Sign In')}
             </Button>
           </form>
+          <div className="mt-4 text-center">
+            <Button 
+              variant="link" 
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm"
+            >
+              {isSignUp ? 'Already have an account? Sign in' : 'Need to create admin account? Sign up'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
