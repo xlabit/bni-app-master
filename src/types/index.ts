@@ -26,6 +26,7 @@ export interface Member {
   profileImage?: string;
   email: string;
   joinDate: string;
+  keywords?: string;
 }
 
 export interface Deal {
@@ -47,6 +48,8 @@ export interface Deal {
   status: 'active' | 'inactive';
   logoImageUrl?: string;
   bannerImageUrl?: string;
+  keywords?: string;
+  isPremiumDeal: boolean;
   createdAt: string;
 }
 

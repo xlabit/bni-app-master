@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Member } from '@/types';
 import { useChapters } from '@/hooks/useChapters';
@@ -35,7 +36,8 @@ export const MemberForm: React.FC<MemberFormProps> = ({
       chapterName: member?.chapterName || '',
       membershipEndDate: member?.membershipEndDate || '',
       status: member?.status || 'active' as 'active' | 'inactive',
-      memberRole: member?.memberRole || 'regular' as Member['memberRole']
+      memberRole: member?.memberRole || 'regular' as Member['memberRole'],
+      keywords: member?.keywords || ''
     }
   });
 
@@ -210,6 +212,17 @@ export const MemberForm: React.FC<MemberFormProps> = ({
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="keywords">Keywords</Label>
+            <Textarea
+              id="keywords"
+              {...register('keywords')}
+              placeholder="Enter keywords related to this member (e.g., consulting, marketing, legal)"
+              disabled={mode === 'view'}
+              rows={2}
+            />
           </div>
 
           {mode === 'view' && member && (

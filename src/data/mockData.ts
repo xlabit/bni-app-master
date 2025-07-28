@@ -113,6 +113,8 @@ export const mockDeals: Deal[] = [
     },
     category: 'Business Services',
     status: 'active',
+    keywords: 'marketing, consultation, digital strategy, brand development',
+    isPremiumDeal: true,
     createdAt: '2024-05-15'
   },
   {
@@ -132,6 +134,8 @@ export const mockDeals: Deal[] = [
     },
     category: 'Legal Services',
     status: 'active',
+    keywords: 'legal, consultation, contracts, compliance, business law',
+    isPremiumDeal: false,
     createdAt: '2024-06-01'
   },
   {
@@ -151,6 +155,8 @@ export const mockDeals: Deal[] = [
     },
     category: 'Food & Catering',
     status: 'active',
+    keywords: 'catering, corporate events, food, meetings, special occasions',
+    isPremiumDeal: false,
     createdAt: '2024-06-20'
   }
 ];

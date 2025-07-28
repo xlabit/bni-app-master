@@ -78,6 +78,8 @@ export type Database = {
           discount_value: number
           end_date: string
           id: string
+          is_premium_deal: boolean
+          keywords: string | null
           logo_image_url: string | null
           long_description: string
           member_id: string | null
@@ -101,6 +103,8 @@ export type Database = {
           discount_value: number
           end_date: string
           id?: string
+          is_premium_deal?: boolean
+          keywords?: string | null
           logo_image_url?: string | null
           long_description: string
           member_id?: string | null
@@ -124,6 +128,8 @@ export type Database = {
           discount_value?: number
           end_date?: string
           id?: string
+          is_premium_deal?: boolean
+          keywords?: string | null
           logo_image_url?: string | null
           long_description?: string
           member_id?: string | null
@@ -190,6 +196,7 @@ export type Database = {
           email: string
           id: string
           join_date: string
+          keywords: string | null
           member_role: Database["public"]["Enums"]["member_role"]
           membership_end_date: string
           name: string
@@ -206,6 +213,7 @@ export type Database = {
           email: string
           id?: string
           join_date?: string
+          keywords?: string | null
           member_role?: Database["public"]["Enums"]["member_role"]
           membership_end_date: string
           name: string
@@ -222,6 +230,7 @@ export type Database = {
           email?: string
           id?: string
           join_date?: string
+          keywords?: string | null
           member_role?: Database["public"]["Enums"]["member_role"]
           membership_end_date?: string
           name?: string

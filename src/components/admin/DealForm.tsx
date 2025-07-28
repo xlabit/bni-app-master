@@ -45,7 +45,9 @@ export const DealForm: React.FC<DealFormProps> = ({
       category: deal?.category || '',
       status: deal?.status || 'active' as 'active' | 'inactive',
       logoImageUrl: deal?.logoImageUrl || '',
-      bannerImageUrl: deal?.bannerImageUrl || ''
+      bannerImageUrl: deal?.bannerImageUrl || '',
+      keywords: deal?.keywords || '',
+      isPremiumDeal: deal?.isPremiumDeal || false
     }
   });
 
@@ -162,6 +164,17 @@ export const DealForm: React.FC<DealFormProps> = ({
               rows={3}
             />
             {errors.longDescription && <p className="text-sm text-red-600">{errors.longDescription.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="keywords">Keywords</Label>
+            <Textarea
+              id="keywords"
+              {...register('keywords')}
+              placeholder="Enter keywords related to this deal (e.g., marketing, consultation, business)"
+              disabled={mode === 'view'}
+              rows={2}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -312,24 +325,44 @@ export const DealForm: React.FC<DealFormProps> = ({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Status</Label>
-            {mode === 'view' ? (
-              <Badge variant={watch('status') === 'active' ? 'default' : 'secondary'}>
-                {watch('status')}
-              </Badge>
-            ) : (
-              <div className="flex gap-2">
-                <Badge
-                  variant={watch('status') === 'active' ? 'default' : 'secondary'}
-                  className="cursor-pointer"
-                  onClick={toggleStatus}
-                >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Status</Label>
+              {mode === 'view' ? (
+                <Badge variant={watch('status') === 'active' ? 'default' : 'secondary'}>
                   {watch('status')}
                 </Badge>
-                <span className="text-sm text-gray-500">Click to toggle</span>
-              </div>
-            )}
+              ) : (
+                <div className="flex gap-2">
+                  <Badge
+                    variant={watch('status') === 'active' ? 'default' : 'secondary'}
+                    className="cursor-pointer"
+                    onClick={toggleStatus}
+                  >
+                    {watch('status')}
+                  </Badge>
+                  <span className="text-sm text-gray-500">Click to toggle</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="isPremiumDeal">Is Premium Deal</Label>
+              {mode === 'view' ? (
+                <div className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm">
+                  {watch('isPremiumDeal') ? 'Yes' : 'No'}
+                </div>
+              ) : (
+                <select
+                  id="isPremiumDeal"
+                  {...register('isPremiumDeal')}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="false">No</option>
+                  <option value="true">Yes</option>
+                </select>
+              )}
+            </div>
           </div>
 
           {mode === 'view' && deal && (
