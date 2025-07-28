@@ -65,7 +65,7 @@ export const Login = () => {
               <Building2 className="w-8 h-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Admin Dashboard</CardTitle>
+          <CardTitle className="text-2xl font-bold">Buy in BNI Privilege Cards</CardTitle>
           <CardDescription>
             {isSignUp ? 'Create admin account' : 'Sign in to access the business network admin panel'}
           </CardDescription>
