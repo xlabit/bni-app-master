@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DashboardLayout } from '@/components/admin/DashboardLayout';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import { CategoryForm } from '@/components/admin/CategoryForm';
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory, Category } from '@/hooks/useCategories';
 import { useToast } from '@/hooks/use-toast';
@@ -115,16 +115,16 @@ export const Categories = () => {
 
   if (error) {
     return (
-    <DashboardLayout title="Categories">
+    <AdminLayout title="Categories">
         <div className="text-center py-8">
           <p className="text-red-600">Error loading categories: {error.message}</p>
         </div>
-      </DashboardLayout>
+      </AdminLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Categories">
+    <AdminLayout title="Categories">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -248,6 +248,6 @@ export const Categories = () => {
           mode={formMode}
         />
       </div>
-    </DashboardLayout>
+    </AdminLayout>
   );
 };

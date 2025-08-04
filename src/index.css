@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,42 +19,43 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 355 75% 33%; /* BNI Red #A6192E */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 22% 22%; /* Dark Gray #2C3E50 */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
+    --muted: 210 20% 97%; /* Light Gray #F8F9FA */
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 20% 97%;
+    --accent-foreground: 355 75% 33%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 355 75% 33%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* BNI Chart Colors */
+    --chart-1: 355 75% 33%; /* BNI Red */
+    --chart-2: 210 22% 22%; /* Dark Gray */
+    --chart-3: 142 71% 45%; /* Success Green */
+    --chart-4: 45 93% 47%; /* Warning Yellow */
+    --chart-5: 0 84% 60%; /* Danger Red */
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* BNI Sidebar Colors */
+    --sidebar-background: 355 75% 33%; /* BNI Red sidebar */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 355 75% 33%;
+    --sidebar-accent: 355 75% 28%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 355 75% 28%;
+    --sidebar-ring: 0 0% 100%;
   }
 
   .dark {

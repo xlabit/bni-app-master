@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { DashboardLayout } from '@/components/admin/DashboardLayout';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Filter, Edit, Trash2, Eye, Calendar, Percent } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -129,19 +129,19 @@ const Deals = () => {
 
   if (error) {
     return (
-      <DashboardLayout title="Deals Management">
+      <AdminLayout title="Deals Management">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <h3 className="text-lg font-medium text-red-600">Error loading deals</h3>
             <p className="text-gray-600">Please try refreshing the page.</p>
           </div>
         </div>
-      </DashboardLayout>
+      </AdminLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Deals Management">
+    <AdminLayout title="Deals Management">
       <div className="space-y-6">
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -291,7 +291,7 @@ const Deals = () => {
           mode={formMode}
         />
       </div>
-    </DashboardLayout>
+    </AdminLayout>
   );
 };
 

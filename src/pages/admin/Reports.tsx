@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { DashboardLayout } from '@/components/admin/DashboardLayout';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
@@ -30,7 +30,7 @@ const Reports = () => {
   ];
 
   return (
-    <DashboardLayout title="Reports & Analytics">
+    <AdminLayout title="Reports & Analytics">
       <div className="space-y-6">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -137,7 +137,7 @@ const Reports = () => {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </AdminLayout>
   );
 };
 

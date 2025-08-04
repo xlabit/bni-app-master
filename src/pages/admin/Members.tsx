@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DashboardLayout } from '@/components/admin/DashboardLayout';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Filter, Edit, Trash2, Eye, FileSpreadsheet } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -134,20 +134,20 @@ const Members = () => {
   };
 
   if (error) {
-    return (
-      <DashboardLayout title="Members Management">
+  return (
+    <AdminLayout title="Members Management">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <h3 className="text-lg font-medium text-red-600">Error loading members</h3>
             <p className="text-gray-600">Please try refreshing the page.</p>
           </div>
         </div>
-      </DashboardLayout>
+      </AdminLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Members Management">
+    <AdminLayout title="Members Management">
       <div className="space-y-6">
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -310,7 +310,7 @@ const Members = () => {
           onImportComplete={handleImportComplete}
         />
       </div>
-    </DashboardLayout>
+    </AdminLayout>
   );
 };
 

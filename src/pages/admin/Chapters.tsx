@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { DashboardLayout } from '@/components/admin/DashboardLayout';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit, Trash2, Eye, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -112,19 +112,19 @@ const Chapters = () => {
 
   if (error) {
     return (
-      <DashboardLayout title="Chapters Management">
+      <AdminLayout title="Chapters Management">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <h3 className="text-lg font-medium text-red-600">Error loading chapters</h3>
             <p className="text-gray-600">Please try refreshing the page.</p>
           </div>
         </div>
-      </DashboardLayout>
+      </AdminLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Chapters Management">
+    <AdminLayout title="Chapters Management">
       <div className="space-y-6">
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between">
@@ -234,7 +234,7 @@ const Chapters = () => {
           mode={formMode}
         />
       </div>
-    </DashboardLayout>
+    </AdminLayout>
   );
 };
 
